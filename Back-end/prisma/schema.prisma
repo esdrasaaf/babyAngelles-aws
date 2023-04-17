@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(250)
+  email           String            @unique @db.VarChar(250)
+  password        String            @db.VarChar(250)
+  createdAt       DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  image           String            @default("")
+  Avaliations     Avaliations[]
+  BrowsingHistory BrowsingHistory[]
+  Cart            Cart[]
+  Purchases       Purchases[]
+  SavedProducts   SavedProducts[]
+  Session         Session[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  User      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Brands {
+  id        Int        @id @default(autoincrement())
+  name      String
+  createdAt DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt DateTime   @default(now()) @db.Timestamp(6)
+  Products  Products[]
+}
+
+model Categories {
+  id        Int        @id @default(autoincrement())
+  name      String
+  image     String
+  createdAt DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt DateTime   @default(now()) @db.Timestamp(6)
+  Products  Products[]
+}
+
+model Colors {
+  id        Int        @id @default(autoincrement())
+  name      String
+  hexCode   String     @db.VarChar(8)
+  createdAt DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt DateTime   @default(now()) @db.Timestamp(6)
+  Products  Products[]
+}
+
+model PromotionsImages {
+  id        Int      @id @default(autoincrement())
+  image     String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @db.Timestamp(6)
+}
+
+model Products {
+  id              Int               @id @default(autoincrement())
+  image           String
+  name            String
+  price           Int
+  categoryId      Int
+  colorId         Int
+  brandId         Int
+  description     String
+  numberOfSales   Int               @default(0)
+  updatedAt       DateTime          @default(now()) @db.Timestamp(6)
+  createdAt       DateTime          @default(now()) @db.Timestamp(6)
+  Avaliations     Avaliations[]
+  BrowsingHistory BrowsingHistory[]
+  Cart            Cart[]
+  Brands          Brands            @relation(fields: [brandId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Categories      Categories        @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Colors          Colors            @relation(fields: [colorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Purchases       Purchases[]
+  SavedProducts   SavedProducts[]
+}
+
+model Avaliations {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  avaliation String
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime  @default(now()) @db.Timestamp(6)
+  rating     Int       @default(0)
+  Products   Products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User       User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Cart {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime  @default(now()) @db.Timestamp(6)
+  Products  Products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model SavedProducts {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime  @default(now()) @db.Timestamp(6)
+  Products  Products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model BrowsingHistory {
+  id        Int      @id(map: "Historics_pkey") @default(autoincrement())
+  productId Int
+  userId    Int
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @db.Timestamp(6)
+  Products  Products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Historics_productId_fkey")
+  User      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Historics_userId_fkey")
+}
+
+model Purchases {
+  id          Int      @id @default(autoincrement())
+  purchaseId  String   @db.Uuid
+  userId      Int
+  productId   Int
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @db.Timestamp(6)
+  Products    Products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User        User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
